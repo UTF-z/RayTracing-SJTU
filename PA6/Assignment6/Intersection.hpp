@@ -12,12 +12,12 @@ class Sphere;
 struct Intersection
 {
     Intersection(){
-        happened=false;
-        coords=Vector3f();
-        normal=Vector3f();
-        distance= std::numeric_limits<double>::max();
-        obj =nullptr;
-        m=nullptr;
+        happened=false; // whether intersect
+        coords=Vector3f();  // intersection point
+        normal=Vector3f();  // normal of the facet at the intersection point
+        distance= std::numeric_limits<double>::max();   // between intersection point and ray.origin
+        obj =nullptr;   // points to the intersection point
+        m=nullptr;  // obj material
     }
     bool happened;
     Vector3f coords;
