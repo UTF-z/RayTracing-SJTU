@@ -32,11 +32,11 @@ class Bounds3
     {
         Vector3f d = Diagonal();
         if (d.x > d.y && d.x > d.z)
-            return 0;
+            return 0;   // max extend along x-axis
         else if (d.y > d.z)
-            return 1;
+            return 1;   // along y-axis
         else
-            return 2;
+            return 2;   // along z-axis
     }
 
     double SurfaceArea() const
@@ -63,7 +63,7 @@ class Bounds3
             o.y /= pMax.y - pMin.y;
         if (pMax.z > pMin.z)
             o.z /= pMax.z - pMin.z;
-        return o;
+        return o;   // p = pMin + (pMax - pMin) * o
     }
 
     bool Overlaps(const Bounds3& b1, const Bounds3& b2)
@@ -96,7 +96,21 @@ inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
     // invDir: ray direction(x,y,z), invDir=(1.0/x,1.0/y,1.0/z), use this because Multiply is faster that Division
     // dirIsNeg: ray direction(x,y,z), dirIsNeg=[int(x>0),int(y>0),int(z>0)], use this to simplify your logic
     // TODO test if ray bound intersects
-    
+    Vector3f Smin = pMin;
+    Vector3f Smax = pMax;
+    for (int i = 0; i < 3; ++i) {
+        if (dirIsNeg[i] == 0) {
+            Smin[i] = pMax[i];
+            Smax[i] = pMin[i];
+        }
+    }
+    Smin = Smin - ray.origin;
+    Smax = Smax - ray.origin;
+    Vector3f Tmin = Smin * invDir;
+    Vector3f Tmax = Smax * invDir;
+    float tin = std::max(Tmin.x, std::max(Tmin.y, Tmin.z));
+    float tout = std::min(Tmax.x, std::min(Tmax.y, Tmax.z));
+    return tout >= tin;
 }
 
 inline Bounds3 Union(const Bounds3& b1, const Bounds3& b2)
