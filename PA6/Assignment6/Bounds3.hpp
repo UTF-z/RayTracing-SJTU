@@ -86,6 +86,10 @@ class Bounds3
 
     inline bool IntersectP(const Ray& ray, const Vector3f& invDir,
                            const std::array<int, 3>& dirisNeg) const;
+    inline bool IntersectP(const Ray& ray) {
+        Vector3f dir = ray.direction;
+        return IntersectP(ray, ray.direction_inv, {int(dir.x > 0), int(dir.y > 0), int(dir.z > 0)});
+    }
 };
 
 
