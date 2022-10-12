@@ -1,7 +1,3 @@
-//
-// Created by Göksu Güvendiren on 2019-05-14.
-//
-
 #include "Scene.hpp"
 
 
@@ -59,7 +55,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
     Material *m = intersection.m;
     Object *hitObject = intersection.obj;
     Vector3f hitColor = this->backgroundColor;
-//    float tnear = kInfinity;
+
     Vector2f uv;
     uint32_t index = 0;
     if(intersection.happened) {
@@ -68,7 +64,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         Vector3f N = intersection.normal; // normal
         Vector2f st; // st coordinates
         hitObject->getSurfaceProperties(hitPoint, ray.direction, index, uv, N, st);
-//        Vector3f tmp = hitPoint;
+
         switch (m->getType()) {
             case REFLECTION_AND_REFRACTION:
             {
