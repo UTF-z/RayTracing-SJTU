@@ -71,6 +71,17 @@ public:
     float x, y;
 };
 
+class Matrix3f {
+public:
+    //data member
+    Vector3f c1, c2, c3;
+    // operation
+    Matrix3f(Vector3f _c1, Vector3f _c2, Vector3f _c3): c1(_c1), c2(_c2), c3(_c3){};
+    Vector3f operator * (Vector3f v) {
+        return (v.x * c1 + v.y * c2 + v.z * c3);
+    }
+};
+
 inline Vector3f lerp(const Vector3f &a, const Vector3f &b, const float &t)
 {
     return a * (1 - t) + b * t;

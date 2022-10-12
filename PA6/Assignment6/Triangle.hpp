@@ -96,6 +96,14 @@ public:
                                      mesh.Vertices[i + j].Position.Y,
                                      mesh.Vertices[i + j].Position.Z) *
                             60.f;
+                //processing verts
+                float theta = 180.0 / 180.0 * M_PI;
+                Vector3f c1{cos(theta), 0, -sin(theta)};
+                Vector3f c2{0         , 1,           0};
+                Vector3f c3{sin(theta), 0, cos(theta)};
+                Matrix3f rotmat(c1, c2, c3);
+                vert = rotmat * vert;
+                //end processing verts
                 face_vertices[j] = vert;
 
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
