@@ -1,7 +1,3 @@
-//
-// Created by LEI XU on 5/16/19.
-//
-
 #ifndef RAYTRACING_BOUNDS3_H
 #define RAYTRACING_BOUNDS3_H
 #include "Ray.hpp"
@@ -108,10 +104,9 @@ inline bool Bounds3::IntersectP(const Ray &ray, const Vector3f &invDir,
             Smax[i] = pMin[i];
         }
     }
-    Smin = Smin - ray.origin;
-    Smax = Smax - ray.origin;
-    Vector3f Tmin = Smin * invDir;
-    Vector3f Tmax = Smax * invDir;
+
+    Vector3f Tmin = (Smin - ray.origin) * invDir;
+    Vector3f Tmax = (Smax - ray.origin) * invDir;
     float t_enter = std::max(Tmin.x, std::max(Tmin.y, Tmin.z));
     float t_exit = std::min(Tmax.x, std::max(Tmax.y, Tmax.z));
     return t_exit >= t_enter && t_exit >= 0;
