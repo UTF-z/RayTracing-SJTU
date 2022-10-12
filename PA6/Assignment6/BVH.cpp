@@ -104,27 +104,26 @@ Intersection BVHAccel::Intersect(const Ray& ray) const
 
 Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 {
-    // TODO Traverse the BVH to find intersection
-    //Intersection isect;
-    //if (!node) return isect;
-    //if (!node->bounds.IntersectP(ray)) return isect;
-    //if (node->object) {
-        //isect = node->object->getIntersection(ray);
-        //return isect;
-    //}
-    //else {
-        //Intersection isect_l = getIntersection(node->left, ray);
-        //Intersection isect_r = getIntersection(node->right, ray);
-        //if (!isect_l.happened) isect = isect_r;
-        //else {
-            //if (isect_r.happened) {
-                //isect = isect_l.distance < isect_r.distance ? isect_l : isect_r;
-            //}
-            //else {
-                //isect = isect_l;
-            //}
-        //}
-        //return isect;
-    //}
+    Intersection isect;
+    if (!node) return isect;
+    if (!node->bounds.IntersectP(ray)) return isect;
+    if (node->object) {
+        isect = node->object->getIntersection(ray);
+        return isect;
+    }
+    else {
+        Intersection isect_l = getIntersection(node->left, ray);
+        Intersection isect_r = getIntersection(node->right, ray);
+        if (!isect_l.happened) isect = isect_r;
+        else {
+            if (isect_r.happened) {
+                isect = isect_l.distance < isect_r.distance ? isect_l : isect_r;
+            }
+            else {
+                isect = isect_l;
+            }
+        }
+        return isect;
+    }
 
 }

@@ -239,11 +239,6 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.normal = this->normal;
     inter.obj = this;
 
-    // TODO find ray triangle intersection
-
-
-
-
     return inter;
 }
 

@@ -1,7 +1,3 @@
-//
-// Created by goksu on 2/25/20.
-//
-
 #include <fstream>
 #include "Scene.hpp"
 #include "Renderer.hpp"
@@ -28,17 +24,12 @@ void Renderer::Render(const Scene& scene)
             float x = (2 * (i + 0.5) / (float)scene.width - 1) *
                       imageAspectRatio * scale;
             float y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
-            // TODO: Find the x and y positions of the current pixel to get the
-            // direction
-            //  vector that passes through it.
-            // Also, don't forget to multiply both of them with the variable
-            // *scale*, and x (horizontal) variable with the *imageAspectRatio*
+            // Find the x and y positions of the current pixel to get the
+            // direction vector that passes through it.
             Vector3f dir(x, y, -1);
             dir = normalize(dir);
             Ray ray(eye_pos, dir);
             framebuffer[m++] = scene.castRay(ray, 0);
-            // Don't forget to normalize this direction!
-
         }
         UpdateProgress(j / (float)scene.height);
     }
