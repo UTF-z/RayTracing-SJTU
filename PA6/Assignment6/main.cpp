@@ -13,11 +13,12 @@ int main(int argc, char** argv)
 {
     Scene scene(1280, 960);
 
-    MeshTriangle bunny("../models/bunny/bunny.obj");
+    MeshTriangle bunny("../models/bunny/bunny.obj", 20.0, 60.0, 0.0, Vector3f{0.0, 0.0, -10.0}, true);
 
     scene.Add(&bunny);
     scene.Add(std::make_unique<Light>(Vector3f(-20, 70, 20), 1));
     scene.Add(std::make_unique<Light>(Vector3f(20, 70, 20), 1));
+    scene.Add(std::make_unique<Light>(Vector3f(-20, -40, 20), 1));
     scene.buildBVH();
 
     Renderer r;

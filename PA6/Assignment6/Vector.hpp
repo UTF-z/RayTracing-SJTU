@@ -77,9 +77,13 @@ public:
     Vector3f c1, c2, c3;
     // operation
     Matrix3f(Vector3f _c1, Vector3f _c2, Vector3f _c3): c1(_c1), c2(_c2), c3(_c3){};
-    Vector3f operator * (Vector3f v) {
-        return (v.x * c1 + v.y * c2 + v.z * c3);
+    Vector3f operator * (const Vector3f& v) { return (v.x * c1 + v.y * c2 + v.z * c3); }
+    Matrix3f operator * (const Matrix3f& m) { return Matrix3f(*this * m.c1, *this * m.c2, *this * m.c3);}
+    friend std::ostream &operator<<(std::ostream &os, const Matrix3f &m)
+    {
+        return os << m.c1 << ", " << m.c2 << ", " << m.c3;
     }
+    
 };
 
 inline Vector3f lerp(const Vector3f &a, const Vector3f &b, const float &t)

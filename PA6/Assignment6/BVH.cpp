@@ -12,7 +12,7 @@ BVHAccel::BVHAccel(std::vector<Object *> p, int maxPrimsInNode,
     if (primitives.empty())
         return;
 
-    root = recursiveBuild2(primitives);
+    root = recursiveBuildSAH(primitives);
 
     time(&stop);
     double diff = difftime(stop, start);
@@ -94,7 +94,7 @@ BVHBuildNode *BVHAccel::recursiveBuild(std::vector<Object *> objects)
     return node;
 }
 
-BVHBuildNode* BVHAccel::recursiveBuild2(std::vector<Object*> objects)
+BVHBuildNode* BVHAccel::recursiveBuildWithoutSorting(std::vector<Object*> objects)
 {
     BVHBuildNode* node = new BVHBuildNode();
 
@@ -111,41 +111,13 @@ BVHBuildNode* BVHAccel::recursiveBuild2(std::vector<Object*> objects)
         return node;
     }
     else if (objects.size() == 2) {
-        node->left = recursiveBuild(std::vector<Object*>{objects[0]});
-        node->right = recursiveBuild(std::vector<Object*>{objects[1]});
+        node->left = recursiveBuildWithoutSorting(std::vector<Object*>{objects[0]});
+        node->right = recursiveBuildWithoutSorting(std::vector<Object*>{objects[1]});
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
         return node;
     }
     else {
-        /*
-        Bounds3 centroidBounds;
-        for (int i = 0; i < objects.size(); ++i)
-            centroidBounds =
-                Union(centroidBounds, objects[i]->getBounds().Centroid());
-        int dim = centroidBounds.maxExtent();
-        switch (dim) {
-        case 0:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().x <
-                       f2->getBounds().Centroid().x;
-            });
-            break;
-        case 1:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().y <
-                       f2->getBounds().Centroid().y;
-            });
-            break;
-        case 2:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().z <
-                       f2->getBounds().Centroid().z;
-            });
-            break;
-        }
-        */
-
         auto beginning = objects.begin();
         auto middling = objects.begin() + (objects.size() / 2);
         auto ending = objects.end();
@@ -155,12 +127,88 @@ BVHBuildNode* BVHAccel::recursiveBuild2(std::vector<Object*> objects)
 
         assert(objects.size() == (leftshapes.size() + rightshapes.size()));
 
-        node->left = recursiveBuild(leftshapes);
-        node->right = recursiveBuild(rightshapes);
+        node->left = recursiveBuildWithoutSorting(leftshapes);
+        node->right = recursiveBuildWithoutSorting(rightshapes);
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
     }
     return node;
+}
+
+BVHBuildNode* BVHAccel::recursiveBuildSAH(std::vector<Object*> objects)
+{
+    BVHBuildNode* node = new BVHBuildNode();
+
+    // Compute bounds of all primitives in BVH node
+    Bounds3 bounds;
+    for (int i = 0; i < objects.size(); ++i)
+        bounds = Union(bounds, objects[i]->getBounds());
+    if (objects.size() == 1) {
+        // Create leaf _BVHBuildNode_
+        node->bounds = objects[0]->getBounds();
+        node->object = objects[0];
+        node->left = nullptr;
+        node->right = nullptr;
+        return node;
+    }
+    else if (objects.size() == 2) {
+        node->left = recursiveBuildSAH(std::vector<Object*>{objects[0]});
+        node->right = recursiveBuildSAH(std::vector<Object*>{objects[1]});
+
+        node->bounds = Union(node->left->bounds, node->right->bounds);
+        return node;
+    }
+    else {
+        Bounds3 centroidBounds;
+        for (int i = 0; i < objects.size(); ++i)
+            centroidBounds =
+                Union(centroidBounds, objects[i]->getBounds().Centroid());
+        int dim = centroidBounds.maxExtent();
+        switch (dim)
+        {
+        case 0:
+            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2)
+                      { return f1->getBounds().Centroid().x <
+                               f2->getBounds().Centroid().x; });
+            break;
+        case 1:
+            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2)
+                      { return f1->getBounds().Centroid().y <
+                               f2->getBounds().Centroid().y; });
+            break;
+        case 2:
+            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2)
+                      { return f1->getBounds().Centroid().z <
+                               f2->getBounds().Centroid().z; });
+            break;
+        }
+        float Sn = bounds.SurfaceArea();
+        float SnInv = 1.0 / Sn;
+        float minCost = kInfinity;
+        int bestCut = 0;
+        int N = objects.size();
+        Bounds3 boundsL;
+        for (int i = 0; i < N; i++) {
+            boundsL = Union(boundsL, objects[i]->getBounds());
+            float Sl = boundsL.SurfaceArea();
+            float cost = 1 + Sl * SnInv * (i + 1) * 5 + (Sn - Sl) * SnInv * (N - i - 1) * 5;
+            if (cost < minCost) {
+                minCost = cost;
+                bestCut = i;
+            }
+        }
+        //std::cout << "best cut at: " << bestCut << " out of " << N << std::endl;
+        auto begin = objects.begin();
+        auto end = objects.end();
+        auto mid = begin + bestCut + 1;
+        auto leftArray = std::vector<Object*>(begin, mid);
+        auto rightArray = std::vector<Object*>(mid, end);
+        assert(objects.size() == leftArray.size() + rightArray.size());
+        node->left = recursiveBuildSAH(leftArray);
+        node->right = recursiveBuildSAH(rightArray);
+        node->bounds = Union(node->left->bounds, node->right->bounds);
+        return node;
+    }
 }
 
 Intersection BVHAccel::Intersect(const Ray& ray) const

@@ -75,7 +75,7 @@ public:
 class MeshTriangle : public Object
 {
 public:
-    MeshTriangle(const std::string& filename)
+    MeshTriangle(const std::string& filename, float deg_x=0., float deg_y=0., float deg_z=0., Vector3f trans=Vector3f({0.0, 0.0, 0.0}), bool transform_on=false)
     {
         objl::Loader loader;
         loader.LoadFile(filename);
@@ -89,6 +89,9 @@ public:
         Vector3f max_vert = Vector3f{-std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity()};
+        deg_x = deg_x / 180.0 * M_PI;
+        deg_y = deg_y / 180.0 * M_PI;
+        deg_z = deg_z / 180.0 * M_PI;
         for (int i = 0; i < mesh.Vertices.size(); i += 3) {
             std::array<Vector3f, 3> face_vertices;
             for (int j = 0; j < 3; j++) {
@@ -97,13 +100,30 @@ public:
                                      mesh.Vertices[i + j].Position.Z) *
                             60.f;
                 //processing verts
-                float theta = 180.0 / 180.0 * M_PI;
-                Vector3f c1{cos(theta), 0, -sin(theta)};
-                Vector3f c2{0         , 1,           0};
-                Vector3f c3{sin(theta), 0, cos(theta)};
-                Matrix3f rotmat(c1, c2, c3);
-                vert = rotmat * vert;
+                //float theta = 180.0 / 180.0 * M_PI;
+                //Vector3f c1{cos(theta), 0, -sin(theta)};
+                //Vector3f c2{0         , 1,           0};
+                //Vector3f c3{sin(theta), 0, cos(theta)};
+                //Matrix3f rotmat(c1, c2, c3);
+                //vert = rotmat * vert;
                 //end processing verts
+                if (transform_on) {
+                    Matrix3f rotmat_x(
+                        Vector3f({1, 0, 0}),
+                        Vector3f({0, cos(deg_x), sin(deg_x)}),
+                        Vector3f({0, -sin(deg_x), cos(deg_x)}));
+
+                    Matrix3f rotmat_y(
+                        Vector3f({cos(deg_y), 0, -sin(deg_y)}),
+                        Vector3f({0, 1, 0}),
+                        Vector3f({sin(deg_y), 0, cos(deg_y)}));
+
+                    Matrix3f rotmat_z(
+                        Vector3f({cos(deg_z), sin(deg_z), 0}),
+                        Vector3f({-sin(deg_z), cos(deg_z), 0}),
+                        Vector3f({0, 0, 1}));
+                    vert = rotmat_x * rotmat_y * rotmat_z * vert + trans;
+                }
                 face_vertices[j] = vert;
 
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
