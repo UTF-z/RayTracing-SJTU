@@ -12,7 +12,12 @@ BVHAccel::BVHAccel(std::vector<Object *> p, int maxPrimsInNode,
     if (primitives.empty())
         return;
 
-    root = recursiveBuildSAH(primitives);
+    if (splitMethod == SplitMethod::NAIVE)
+        root = recursiveBuildSAH(primitives);
+    else if (splitMethod == SplitMethod::SAH)
+        root = recursiveBuildSAH(primitives);
+    else if (splitMethod == SplitMethod::WORST)
+        root = recursiveBuildWithoutSorting(primitives);
 
     time(&stop);
     double diff = difftime(stop, start);
