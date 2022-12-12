@@ -4,8 +4,8 @@
 
 #include "Scene.hpp"
 
-
-void Scene::buildBVH() {
+void Scene::buildBVH()
+{
     printf(" - Generating BVH...\n\n");
     this->bvh = new BVHAccel(objects, 1, BVHAccel::SplitMethod::NAIVE);
 }
@@ -18,17 +18,22 @@ Intersection Scene::intersect(const Ray &ray) const
 void Scene::sampleLight(Intersection &pos, float &pdf) const
 {
     float emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()){
+    for (uint32_t k = 0; k < objects.size(); ++k)
+    {
+        if (objects[k]->hasEmit())
+        {
             emit_area_sum += objects[k]->getArea();
         }
     }
     float p = get_random_float() * emit_area_sum;
     emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()){
+    for (uint32_t k = 0; k < objects.size(); ++k)
+    {
+        if (objects[k]->hasEmit())
+        {
             emit_area_sum += objects[k]->getArea();
-            if (p <= emit_area_sum){
+            if (p <= emit_area_sum)
+            {
                 objects[k]->Sample(pos, pdf);
                 break;
             }
@@ -37,22 +42,23 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const
 }
 
 bool Scene::trace(
-        const Ray &ray,
-        const std::vector<Object*> &objects,
-        float &tNear, uint32_t &index, Object **hitObject) const
+    const Ray &ray,
+    const std::vector<Object *> &objects,
+    float &tNear, uint32_t &index, Object **hitObject) const
 {
     *hitObject = nullptr;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
+    for (uint32_t k = 0; k < objects.size(); ++k)
+    {
         float tNearK = kInfinity;
         uint32_t indexK;
         Vector2f uvK;
-        if (objects[k]->intersect(ray, tNearK, indexK) && tNearK < tNear) {
+        if (objects[k]->intersect(ray, tNearK, indexK) && tNearK < tNear)
+        {
             *hitObject = objects[k];
             tNear = tNearK;
             index = indexK;
         }
     }
-
 
     return (*hitObject != nullptr);
 }
@@ -60,21 +66,48 @@ bool Scene::trace(
 // Implementation of Path Tracing
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
-    if (depth == 5) return Vector3f();
+    if (depth == 7)
+        return Vector3f();
     Intersection isect = intersect(ray);
-    if (!isect.happened) return Vector3f();
+    Vector3f normal = isect.normal;
+    Vector3f hitPoint = isect.coords;
+    if (!isect.happened)
+        return Vector3f();
     switch (isect.m->m_type)
     {
+    case MaterialType::REFLECTION_AND_REFRACTION:
+    {
+        Vector3f reflectionDirection = normalize(reflect(ray.direction, normal));
+        Vector3f refractionDirection = normalize(refract(ray.direction, normal, isect.m->ior));
+        Vector3f reflectionRayOrig = (dotProduct(reflectionDirection, normal) < 0) ? hitPoint - normal * EPSILON : hitPoint + normal * EPSILON;
+        Vector3f refractionRayOrig = (dotProduct(refractionDirection, normal) < 0) ? hitPoint - normal * EPSILON : hitPoint + normal * EPSILON;
+        Vector3f reflectionColor = castRay(Ray(reflectionRayOrig, reflectionDirection), depth + 1);
+        Vector3f refractionColor = castRay(Ray(refractionRayOrig, refractionDirection), depth + 1);
+        float kr;
+        fresnel(ray.direction, normal, isect.m->ior, kr);
+        return reflectionColor * kr + refractionColor * (1 - kr);
+        break;
+    }
+    case MaterialType::REFLECTION:
+    {
+        float kr;
+        fresnel(ray.direction, normal, isect.m->ior, kr);
+        Vector3f reflectionDirection = reflect(ray.direction, normal);
+        Vector3f reflectionRayOrig = (dotProduct(reflectionDirection, normal) < 0) ? hitPoint + normal * EPSILON : hitPoint - normal * EPSILON;
+        return castRay(Ray(reflectionRayOrig, reflectionDirection), depth + 1) * kr;
+        break;
+    }
     case MaterialType::DIFFUSE:
     {
-        if (isect.m->hasEmission()) {
-            if (depth == 0) {
+        if (isect.m->hasEmission())
+        {
+            if (depth == 0)
+            {
                 Vector3f emit = isect.m->getEmission();
                 return emit;
             }
             return Vector3f();
         }
-        Vector3f normal = isect.normal;
         Intersection lightP;
         float lightPdf = 1.0;
 
@@ -85,7 +118,8 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         Ray lightRay(isect.coords, lightDir);
         Vector3f lightComp;
         Intersection block = intersect(lightRay);
-        if ((block.coords - lightP.coords).norm() < EPSILON * 100) {
+        if ((block.coords - lightP.coords).norm() < EPSILON * 100)
+        {
             Vector3f emit = lightP.emit;
             Vector3f NN = lightP.normal;
             Vector3f brdf = isect.m->eval(lightRay.direction, -ray.direction, normal);
@@ -95,13 +129,22 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         }
         float rr_test = get_random_float();
         Vector3f objComp;
-        if (rr_test < RussianRoulette) {
+        if (depth < 3) {
             Vector3f wi = isect.m->sample(ray.direction, normal).normalized();
             Ray newRay(isect.coords, wi);
             float cosine = dotProduct(wi, normal);
             Vector3f brdf = isect.m->eval(wi, -ray.direction, normal);
             float pdf = isect.m->pdf(wi, -ray.direction, normal);
-            objComp = castRay(newRay, depth+1) * brdf * cosine / (pdf * RussianRoulette);
+            objComp = castRay(newRay, depth + 1) * brdf * cosine / (pdf);
+        }
+        else if (rr_test < RussianRoulette)
+        {
+            Vector3f wi = isect.m->sample(ray.direction, normal).normalized();
+            Ray newRay(isect.coords, wi);
+            float cosine = dotProduct(wi, normal);
+            Vector3f brdf = isect.m->eval(wi, -ray.direction, normal);
+            float pdf = isect.m->pdf(wi, -ray.direction, normal);
+            objComp = castRay(newRay, depth + 1) * brdf * cosine / (pdf * RussianRoulette);
         }
         return lightComp + objComp;
     }

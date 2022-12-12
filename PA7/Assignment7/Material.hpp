@@ -7,7 +7,7 @@
 
 #include "Vector.hpp"
 
-enum MaterialType { DIFFUSE};
+enum MaterialType {DIFFUSE, REFLECTION, REFLECTION_AND_REFRACTION};
 
 class Material{
 private:
