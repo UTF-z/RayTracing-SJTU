@@ -23,7 +23,7 @@ public:
         float a = dotProduct(ray.direction, ray.direction);
         float b = 2 * dotProduct(ray.direction, L);
         float c = dotProduct(L, L) - radius2;
-        float t0, t1;
+        double t0, t1;
         float area = 4 * M_PI * radius2;
         if (!solveQuadratic(a, b, c, t0, t1)) return false;
         if (t0 < 0) t0 = t1;
@@ -37,12 +37,12 @@ public:
         float a = dotProduct(ray.direction, ray.direction);
         float b = 2 * dotProduct(ray.direction, L);
         float c = dotProduct(L, L) - radius2;
-        float t0, t1;
+        double t0, t1;
         if (!
         solveQuadratic(a, b, c, t0, t1)) return false;
         if (t0 < 0) t0 = t1;
         if (t0 < 0) return false;
-        tnear = t0;
+        tnear = (float)t0;
 
         return true;
     }
@@ -53,13 +53,17 @@ public:
         float a = dotProduct(ray.direction, ray.direction);
         float b = 2 * dotProduct(ray.direction, L);
         float c = dotProduct(L, L) - radius2;
-        float t0, t1;
+        double t0, t1;
         if (!solveQuadratic(a, b, c, t0, t1)) return result;
         if (t0 < 0) t0 = t1;
         if (t0 < 0) return result;
+        t0 = (float)t0;
         result.happened=true;
 
-        result.coords = Vector3f(ray.origin + ray.direction * t0);
+        Vector3f coord = ray.origin + ray.direction * t0;
+        Vector3f r = normalize(coord - center);
+        coord = center + (radius + EPSILON * 100) * r;
+        result.coords = coord;
         result.normal = normalize(Vector3f(result.coords - center));
         result.m = this->m;
         result.obj = this;

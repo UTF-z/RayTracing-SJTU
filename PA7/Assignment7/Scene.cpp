@@ -86,16 +86,14 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         float kr;
         fresnel(ray.direction, normal, isect.m->ior, kr);
         return reflectionColor * kr + refractionColor * (1 - kr);
-        break;
     }
     case MaterialType::REFLECTION:
     {
         float kr;
         fresnel(ray.direction, normal, isect.m->ior, kr);
-        Vector3f reflectionDirection = reflect(ray.direction, normal);
+        Vector3f reflectionDirection = normalize(reflect(ray.direction, normal));
         Vector3f reflectionRayOrig = (dotProduct(reflectionDirection, normal) < 0) ? hitPoint + normal * EPSILON : hitPoint - normal * EPSILON;
         return castRay(Ray(reflectionRayOrig, reflectionDirection), depth + 1) * kr;
-        break;
     }
     case MaterialType::DIFFUSE:
     {
@@ -112,10 +110,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         float lightPdf = 1.0;
 
         sampleLight(lightP, lightPdf);
-        Vector3f To_light = lightP.coords - isect.coords;
+        Vector3f To_light = lightP.coords - hitPoint;
         float dist2 = dotProduct(To_light, To_light);
         Vector3f lightDir = normalize(To_light);
-        Ray lightRay(isect.coords, lightDir);
+        Ray lightRay(hitPoint, lightDir);
         Vector3f lightComp;
         Intersection block = intersect(lightRay);
         if ((block.coords - lightP.coords).norm() < EPSILON * 100)

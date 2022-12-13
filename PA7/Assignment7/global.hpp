@@ -12,13 +12,13 @@ const float kInfinity = std::numeric_limits<float>::max();
 inline float clamp(const float &lo, const float &hi, const float &v)
 { return std::max(lo, std::min(hi, v)); }
 
-inline  bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, float &x1)
+inline  bool solveQuadratic(const double &a, const double &b, const double &c, double &x0, double &x1)
 {
-    float discr = b * b - 4 * a * c;
+    double discr = b * b - 4 * a * c;
     if (discr < 0) return false;
     else if (discr == 0) x0 = x1 = - 0.5 * b / a;
     else {
-        float q = (b > 0) ?
+        double q = (b > 0) ?
                   -0.5 * (b + sqrt(discr)) :
                   -0.5 * (b - sqrt(discr));
         x0 = q / a;
