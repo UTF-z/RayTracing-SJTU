@@ -120,7 +120,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         {
             Vector3f emit = lightP.emit;
             Vector3f NN = lightP.normal;
-            Vector3f brdf = isect.m->eval(lightRay.direction, -ray.direction, normal);
+            Vector3f brdf = isect.m->eval(lightRay.direction, -ray.direction, normal, isect.tcoords.x, isect.tcoords.y);
             float cosine1 = dotProduct(normal, lightRay.direction);
             float cosine2 = dotProduct(NN, -lightRay.direction);
             lightComp = emit * brdf * cosine1 * cosine2 / (dist2 * lightPdf);
@@ -131,7 +131,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
             Vector3f wi = isect.m->sample(ray.direction, normal).normalized();
             Ray newRay(isect.coords, wi);
             float cosine = dotProduct(wi, normal);
-            Vector3f brdf = isect.m->eval(wi, -ray.direction, normal);
+            Vector3f brdf = isect.m->eval(wi, -ray.direction, normal, isect.tcoords.x, isect.tcoords.y);
             float pdf = isect.m->pdf(wi, -ray.direction, normal);
             objComp = castRay(newRay, depth + 1) * brdf * cosine / (pdf);
         }
@@ -140,13 +140,14 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
             Vector3f wi = isect.m->sample(ray.direction, normal).normalized();
             Ray newRay(isect.coords, wi);
             float cosine = dotProduct(wi, normal);
-            Vector3f brdf = isect.m->eval(wi, -ray.direction, normal);
+            Vector3f brdf = isect.m->eval(wi, -ray.direction, normal, isect.tcoords.x, isect.tcoords.y);
             float pdf = isect.m->pdf(wi, -ray.direction, normal);
             objComp = castRay(newRay, depth + 1) * brdf * cosine / (pdf * RussianRoulette);
         }
         return lightComp + objComp;
     }
     default:
+        std::cout << "wrong!" << std::endl;
         return Vector3f();
     }
     return Vector3f();
