@@ -89,7 +89,7 @@ public:
 class MeshTriangle : public Object
 {
 public:
-    MeshTriangle(const std::string& filename, Material *mt = new Material(), bool mow=false)
+    MeshTriangle(const std::string& filename, Material *mt = new Material(), Vector3f (*transform)(Vector3f) = nullptr)
     {
         objl::Loader loader;
         loader.LoadFile(filename);
@@ -115,9 +115,8 @@ public:
                 float u = mesh.Vertices[i+j].TextureCoordinate.X;
                 float v = mesh.Vertices[i+j].TextureCoordinate.Y;
                 auto tex = Vector2f(u, v);
-                if (mow) {
-                    vert = vert * 200;
-                    vert = vert + Vector3f(200, 120, 350);
+                if (transform != nullptr) {
+                    vert = transform(vert);
                 }
                 face_vertices[j] = vert;
                 face_texes[j] = tex;

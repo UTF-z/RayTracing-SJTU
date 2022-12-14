@@ -10,6 +10,13 @@
 // lights) as well as set the options for the render (image width and height,
 // maximum recursion depth, field-of-view, etc.). We then call the render
 // function().
+
+Vector3f transform(Vector3f vert) {
+    vert = vert * 200;
+    vert = vert + Vector3f(200, 120, 200);
+    return vert;
+}
+
 int main(int argc, char** argv)
 {
 
@@ -37,7 +44,7 @@ int main(int argc, char** argv)
     MeshTriangle left("../models/cornellbox/left.obj", red);
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
-    MeshTriangle mow( "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/spot_triangulated_good.obj", mow_texture, true);
+    MeshTriangle mow( "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/spot_triangulated_good.obj", mow_texture, transform);
     Sphere sph1(Vector3f(200, 80, 150), 60, boxWhite);
     Sphere sph2(Vector3f(150, 100, 50), 20, red);
     scene.Add(&floor);
