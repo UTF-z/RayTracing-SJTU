@@ -23,10 +23,13 @@ int main(int argc, char** argv)
     Material* white = new Material(DIFFUSE, Vector3f(0.0f));
     white->Kd = Vector3f(0.725f, 0.71f, 0.68f);
     Material* boxWhite = new Material(REFLECTION, Vector3f(0.0f));
-    //boxWhite->Kd = Vector3f(0.725f, 0.71f, 0.68f);
-    boxWhite->Kd = Vector3f(0.63f, 0.065f, 0.05f);
+    boxWhite->Kd = Vector3f(0.725f, 0.71f, 0.68f);
     Material* light = new Material(DIFFUSE, (8.0f * Vector3f(0.747f+0.058f, 0.747f+0.258f, 0.747f) + 15.6f * Vector3f(0.740f+0.287f,0.740f+0.160f,0.740f) + 18.4f *Vector3f(0.737f+0.642f,0.737f+0.159f,0.737f)));
     light->Kd = Vector3f(0.65f);
+
+    std::string texture_name = "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/new_texture.png";
+    Material* mow_texture = new Material(DIFFUSE, Vector3f(0.0f), texture_name);
+    mow_texture->Kd = Vector3f(0.725f, 0.71f, 0.68f);
 
     MeshTriangle floor("../models/cornellbox/floor.obj", white);
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
@@ -34,9 +37,11 @@ int main(int argc, char** argv)
     MeshTriangle left("../models/cornellbox/left.obj", red);
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
-    Sphere sph1(Vector3f(200, 80, 150), 60,boxWhite);
-    Sphere sph2(Vector3f(150, 100, 50), 20,red);
+    MeshTriangle mow( "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/spot_triangulated_good.obj", mow_texture, true);
+    Sphere sph1(Vector3f(200, 80, 150), 60, boxWhite);
+    Sphere sph2(Vector3f(150, 100, 50), 20, red);
     scene.Add(&floor);
+    //scene.Add(&mow);
     scene.Add(&sph1);
     scene.Add(&sph2);
     //scene.Add(&shortbox);

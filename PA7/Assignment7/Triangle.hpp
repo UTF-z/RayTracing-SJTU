@@ -44,7 +44,7 @@ class Triangle : public Object
 public:
     Vector3f v0, v1, v2; // vertices A, B ,C , counter-clockwise order
     Vector3f e1, e2;     // 2 edges v1-v0, v2-v0;
-    Vector3f t0, t1, t2; // texture coords
+    Vector2f t0, t1, t2; // texture coords
     Vector3f normal;
     float area;
     Material* m;
@@ -89,7 +89,7 @@ public:
 class MeshTriangle : public Object
 {
 public:
-    MeshTriangle(const std::string& filename, Material *mt = new Material())
+    MeshTriangle(const std::string& filename, Material *mt = new Material(), bool mow=false)
     {
         objl::Loader loader;
         loader.LoadFile(filename);
@@ -106,12 +106,21 @@ public:
                                      -std::numeric_limits<float>::infinity()};
         for (int i = 0; i < mesh.Vertices.size(); i += 3) {
             std::array<Vector3f, 3> face_vertices;
+            std::array<Vector2f, 3> face_texes;
 
             for (int j = 0; j < 3; j++) {
                 auto vert = Vector3f(mesh.Vertices[i + j].Position.X,
                                      mesh.Vertices[i + j].Position.Y,
                                      mesh.Vertices[i + j].Position.Z);
+                float u = mesh.Vertices[i+j].TextureCoordinate.X;
+                float v = mesh.Vertices[i+j].TextureCoordinate.Y;
+                auto tex = Vector2f(u, v);
+                if (mow) {
+                    vert = vert * 200;
+                    vert = vert + Vector3f(200, 120, 350);
+                }
                 face_vertices[j] = vert;
+                face_texes[j] = tex;
 
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
                                     std::min(min_vert.y, vert.y),
@@ -123,6 +132,9 @@ public:
 
             triangles.emplace_back(face_vertices[0], face_vertices[1],
                                    face_vertices[2], mt);
+            triangles.back().t0 = face_texes[0];
+            triangles.back().t1 = face_texes[1];
+            triangles.back().t2 = face_texes[2];
         }
 
         bounding_box = Bounds3(min_vert, max_vert);
@@ -262,6 +274,7 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.normal = normal;
     inter.m = m;
     inter.obj = this;
+    inter.tcoords = u * t0 + v * t1 + (1 - u - v) * t2;
     inter.emit = m->getEmission();
     return inter;
 }

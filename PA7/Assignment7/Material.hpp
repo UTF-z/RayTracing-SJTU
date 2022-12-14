@@ -6,6 +6,7 @@
 #define RAYTRACING_MATERIAL_H
 
 #include "Vector.hpp"
+#include <opencv2/opencv.hpp>
 
 enum MaterialType {DIFFUSE, REFLECTION, REFLECTION_AND_REFRACTION};
 
@@ -95,6 +96,7 @@ public:
     //Texture tex;
 
     inline Material(MaterialType t=DIFFUSE, Vector3f e=Vector3f(0,0,0));
+    inline Material(MaterialType t, Vector3f e, std::string& filename);
     inline MaterialType getType();
     //inline Vector3f getColor();
     inline Vector3f getColorAt(double u, double v);
@@ -106,7 +108,9 @@ public:
     // given a ray, calculate the PdF of this ray
     inline float pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N);
     // given a ray, calculate the contribution of this ray
-    inline Vector3f eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N);
+    inline Vector3f eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N, float u, float v);
+private:
+    cv::Mat texture;
 
 };
 
@@ -114,6 +118,14 @@ Material::Material(MaterialType t, Vector3f e){
     m_type = t;
     //m_color = c;
     m_emission = e;
+}
+Material::Material(MaterialType t, Vector3f e, std::string& filename) {
+    m_type = t;
+    m_emission = e;
+    texture = cv::imread(filename, cv::COLOR_RGB2BGR);
+    if (texture.empty()) {
+        std::cout << "wrong texture file name\n";
+    }
 }
 
 MaterialType Material::getType(){return m_type;}
@@ -125,7 +137,15 @@ bool Material::hasEmission() {
 }
 
 Vector3f Material::getColorAt(double u, double v) {
-    return Vector3f();
+    if (!texture.empty()) {
+        auto u_img = u * texture.cols;
+        auto v_img = (1 - v) * texture.rows;
+        auto color = texture.at<cv::Vec3b>(v_img, u_img);
+        //std::cout << "u: " << u << "v:" << v << ": " << int(color[0]) << ' ' << int(color[1]) << ' ' << int(color[2]) << std::endl;
+        return Vector3f((double)color[2] / 255.0f, (double)color[1] / 255.0f, (double)color[0] / 255.0f);
+    } else {
+        return Kd;
+    }
 }
 
 
@@ -161,14 +181,14 @@ float Material::pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N){
     return 0.0;
 }
 
-Vector3f Material::eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N){
+Vector3f Material::eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N, float u, float v){
     switch(m_type){
         case DIFFUSE:
         {
             // calculate the contribution of diffuse   model
             float cosalpha = dotProduct(N, wo);
             if (cosalpha > 0.0f) {
-                Vector3f diffuse = Kd / M_PI;
+                Vector3f diffuse = getColorAt(u, v) / M_PI;
                 return diffuse;
             }
             else
