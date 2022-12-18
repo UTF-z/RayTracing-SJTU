@@ -139,7 +139,7 @@ bool Material::hasEmission() {
 Vector3f Material::getColorAt(double u, double v) {
     if (!texture.empty()) {
         auto u_img = u * texture.cols;
-        auto v_img = (1 - v) * texture.rows;
+        auto v_img = (1-v) * texture.rows;
         auto color = texture.at<cv::Vec3b>(v_img, u_img);
         //std::cout << "u: " << u << "v:" << v << ": " << int(color[0]) << ' ' << int(color[1]) << ' ' << int(color[2]) << std::endl;
         return Vector3f((double)color[2] / 255.0f, (double)color[1] / 255.0f, (double)color[0] / 255.0f);

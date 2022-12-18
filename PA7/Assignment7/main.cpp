@@ -12,8 +12,9 @@
 // function().
 
 Vector3f transform(Vector3f vert) {
-    vert = vert * 200;
-    vert = vert + Vector3f(200, 120, 200);
+    //vert = vert * 200;
+    //vert = vert + Vector3f(200, 120, 200);
+    vert = vert + Vector3f(0, 0, 150);
     return vert;
 }
 
@@ -32,8 +33,6 @@ int main(int argc, char** argv)
     Material* boxWhite = new Material(REFLECTION, Vector3f(0.0f));
     //boxWhite->Kd = Vector3f(0.725f, 0.71f, 0.68f);
     boxWhite->Kd = Vector3f(0.63f, 0.065f, 0.05f);
-    Material* sandbrown = new Material(DIFFUSE, Vector3f(0.0f));
-    sandbrown->Kd = Vector3f(1.0f, 0.7f, 0.4f);
     Material* ginger = new Material(DIFFUSE, Vector3f(0.0f));
     ginger->Kd = Vector3f(0.70f, 0.35f, 0.01f);
     Material* fulvous = new Material(DIFFUSE, Vector3f(0.0f));
@@ -47,42 +46,45 @@ int main(int argc, char** argv)
     Material* mow_texture = new Material(DIFFUSE, Vector3f(0.0f), texture_name);
     mow_texture->Kd = Vector3f(0.725f, 0.71f, 0.68f);
 
-    std::string texture_name = "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/new_texture.png";
-    Material* mow_texture = new Material(DIFFUSE, Vector3f(0.0f), texture_name);
-    mow_texture->Kd = Vector3f(0.725f, 0.71f, 0.68f);
+    std::string wall_texture_name = "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/model/Brick.png";
+    Material* sandbrown = new Material(DIFFUSE, Vector3f(0.0f), wall_texture_name);
+    sandbrown->Kd = Vector3f(1.0f, 0.7f, 0.4f);
 
-    // MeshTriangle floor("../models/cornellbox/floor.obj", white);
-    // MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
-    // MeshTriangle tallbox("../models/cornellbox/tallbox.obj", boxWhite);
-    // MeshTriangle left("../models/cornellbox/left.obj", red);
-    // MeshTriangle right("../models/cornellbox/right.obj", green);
+    //MeshTriangle floor("../models/cornellbox/floor.obj", white);
+    //MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
+    //MeshTriangle tallbox("../models/cornellbox/tallbox.obj", boxWhite);
+    //MeshTriangle left("../models/cornellbox/left.obj", red);
+    //MeshTriangle right("../models/cornellbox/right.obj", green);
 
-    MeshTriangle wall("../models/scene/wall2.obj",sandbrown);
-    MeshTriangle rockery1("../models/scene/rockery12.obj",ginger);
-    MeshTriangle rockery2("../models/scene/rockery22.obj",fulvous);
-    MeshTriangle boxes("../models/scene/boxes2.obj",boxWhite);
-    MeshTriangle sjtu("../models/scene/sjtu2.obj",grey);
-    MeshTriangle light_("../models/cornellbox/light.obj", light);
-    MeshTriangle mow( "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/spot_triangulated_good.obj", mow_texture, transform);
-    // Sphere sph1(Vector3f(200, 80, 150), 60, boxWhite);
-    // Sphere sph2(Vector3f(150, 100, 50), 20, red);
-    // scene.Add(&floor);
+    MeshTriangle wall("../models/model/wall3.obj",sandbrown, transform);
+    MeshTriangle rockery1("../models/model/rockery1.obj",ginger, transform);
+    MeshTriangle rockery2("../models/model/rockery2.obj",fulvous, transform);
+    MeshTriangle boxes("../models/model/boxes.obj",boxWhite, transform);
+    MeshTriangle sjtu("../models/model/sjtu.obj",grey, transform);
+    MeshTriangle light_("../models/model/light.obj", light);
+    //MeshTriangle mow( "/home/elliott/Documents/cg/PA6/PA7/Assignment7/models/test/spot_triangulated_good.obj", mow_texture, transform);
+
+    //Sphere sph1(Vector3f(200, 80, 150), 60, boxWhite);
+    //Sphere sph2(Vector3f(150, 100, 50), 20, red);
+
+    //scene.Add(&floor);
     //scene.Add(&mow);
-    // scene.Add(&sph1);
-    // scene.Add(&sph2);
+    //scene.Add(&sph1);
+    //scene.Add(&sph2);
     //scene.Add(&shortbox);
     //scene.Add(&tallbox);
-    // scene.Add(&left);
-    // scene.Add(&right);
+    //scene.Add(&left);
+    //scene.Add(&right);
+
     scene.Add(&wall);
     scene.Add(&rockery1);
     scene.Add(&rockery2);
     scene.Add(&boxes);
     scene.Add(&sjtu);
     scene.Add(&light_);
-    scene.Add(std::make_unique<Light>(Vector3f(-20, 70, 20), 1));
-    scene.Add(std::make_unique<Light>(Vector3f(20, 70, 20), 1));
-    scene.Add(std::make_unique<Light>(Vector3f(-20, -40, 20), 1));
+    //scene.Add(std::make_unique<Light>(Vector3f(-20, 70, 20), 1));
+    //scene.Add(std::make_unique<Light>(Vector3f(20, 70, 20), 1));
+    //scene.Add(std::make_unique<Light>(Vector3f(-20, -40, 20), 1));
 
     scene.buildBVH();
 

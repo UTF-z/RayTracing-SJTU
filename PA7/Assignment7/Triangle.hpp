@@ -119,6 +119,7 @@ public:
                     vert = transform(vert);
                 }
                 face_vertices[j] = vert;
+                std::cout << vert << std::endl;
                 face_texes[j] = tex;
 
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
@@ -273,7 +274,7 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.normal = normal;
     inter.m = m;
     inter.obj = this;
-    inter.tcoords = u * t0 + v * t1 + (1 - u - v) * t2;
+    inter.tcoords = u * t1 + v * t2 + (1 - u - v) * t0;
     inter.emit = m->getEmission();
     return inter;
 }
