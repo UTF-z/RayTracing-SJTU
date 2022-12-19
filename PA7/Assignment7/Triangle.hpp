@@ -273,7 +273,7 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.normal = normal;
     inter.m = m;
     inter.obj = this;
-    inter.tcoords = u * t0 + v * t1 + (1 - u - v) * t2;
+    inter.tcoords = u * t1 + v * t2 + (1 - u - v) * t0;
     inter.emit = m->getEmission();
     return inter;
 }
