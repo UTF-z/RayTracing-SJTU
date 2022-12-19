@@ -8,7 +8,7 @@
 #include "Vector.hpp"
 #include <opencv2/opencv.hpp>
 
-enum MaterialType {DIFFUSE, REFLECTION, REFLECTION_AND_REFRACTION};
+enum MaterialType {DIFFUSE, REFLECTION, REFLECTION_AND_REFRACTION, BACKGROUND};
 
 class Material{
 private:

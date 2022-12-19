@@ -66,7 +66,7 @@ bool Scene::trace(
 // Implementation of Path Tracing
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
-    if (depth == 7)
+    if (depth == 14)
         return Vector3f();
     Intersection isect = intersect(ray);
     Vector3f normal = isect.normal;
@@ -128,29 +128,6 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
             lightComp = emit * brdf * cosine1 * cosine2 / (dist2 * lightPdf);
         }
 
-        //Vector3f lightComp;
-        //for (uint32_t k = 0; k < objects.size(); ++k)
-        //{
-        //    if (objects[k]->hasEmit())
-        //    {
-        //        objects[k]->Sample(lightP, lightPdf);
-        //        Vector3f To_light = lightP.coords - hitPoint;
-        //        float dist2 = dotProduct(To_light, To_light);
-        //        Vector3f lightDir = normalize(To_light);
-        //        Ray lightRay(hitPoint, lightDir);
-        //        Intersection block = intersect(lightRay);
-        //        if ((block.coords - lightP.coords).norm() < EPSILON * 100)
-        //        {
-        //            Vector3f emit = lightP.emit;
-        //            Vector3f NN = lightP.normal;
-        //            Vector3f brdf = isect.m->eval(lightRay.direction, -ray.direction, normal, isect.tcoords.x, isect.tcoords.y);
-        //            float cosine1 = dotProduct(normal, lightRay.direction);
-        //            float cosine2 = dotProduct(NN, -lightRay.direction);
-        //            lightComp += emit * brdf * cosine1 * cosine2 / (dist2 * lightPdf);
-        //        }
-        //    }
-        //}
-
         float rr_test = get_random_float();
         Vector3f objComp;
         if (depth < 3) {
@@ -171,6 +148,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
             objComp = castRay(newRay, depth + 1) * brdf * cosine / (pdf * RussianRoulette);
         }
         return lightComp + objComp;
+    }
+    case MaterialType::BACKGROUND: {
+        float u = isect.tcoords.x, v = isect.tcoords.y;
+        return isect.m->getColorAt(u, v);
     }
     default:
         std::cout << "wrong!" << std::endl;

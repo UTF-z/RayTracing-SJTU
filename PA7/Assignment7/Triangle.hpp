@@ -119,7 +119,6 @@ public:
                     vert = transform(vert);
                 }
                 face_vertices[j] = vert;
-                std::cout << vert << std::endl;
                 face_texes[j] = tex;
 
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
